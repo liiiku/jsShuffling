@@ -1,9 +1,6 @@
 /**
  * Created by Administrator on 2016/9/19.
  */
-/**
- * Created by Administrator on 2016/9/19.
- */
 function getStyle(obj,attr){
     if(obj.currentStyle){//IE6-8
         return obj.currentStyle[attr];
