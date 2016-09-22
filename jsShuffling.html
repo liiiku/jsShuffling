@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <style>
+        *{ margin: 0; padding: 0;}
+        body{ background-color: #666;}
+        ul{ list-style: none;}
+        ul li{ float: left;}
+        #container{ width: 400px; /*height: 430px;*/ margin: 50px auto 0; background-color: #999;}
+
+        /* 设置大图部分 */
+        #container #big_pic{ width: 400px; height: 320px; overflow: hidden; position: relative;}
+        #container #big_pic #pic_list{ width: 400px; height: 320px; overflow: hidden; position: relative;}
+        #container #big_pic #pic_list li{ width: 400px; height: 320px; overflow: hidden; position: absolute; left: 0; top: 0; z-index: 0;}
+
+        /* 大图中的左右箭头 */
+        #container #pre{ width: 60px; height: 60px; background: url("img/btn.gif") no-repeat; position: absolute; left: 20px; top: 100px; z-index: 999; cursor: pointer; opacity: 0; filter: alpha(opacity:0);}
+        #container #next{ width: 60px; height: 60px; background: url("img/btn.gif") no-repeat 0 -60px; position: absolute; right: 20px; top: 100px; z-index: 999; cursor: pointer; opacity: 0; filter: alpha(opacity:0);}
+
+        /* 大图部分箭头显示的区域 */
+        #container .mark_left{ width: 200px; height: 320px; background-color: green;  position: absolute; left: 0; top: 0; z-index: 998; opacity: 0; filter: alpha(opacity:0);}
+        #container .mark_right{ width: 200px; height: 320px; background-color: red;  position: absolute; right: 0; top: 0; z-index: 998; opacity: 0; filter: alpha(opacity:0);}
+
+        /* 大图中的半透明说明 */
+        #big_pic .big_bg{ width: 400px; height: 30px; line-height: 30px; background: rgba(0,0,0,.5); position: absolute; bottom: 0; left: 0; z-index: 1000;}
+        #big_pic .pic_con{ position: absolute; left: 20px; bottom: 5px; color: #fff; z-index: 1000;}
+        #big_pic .pic_length{ position: absolute; right: 20px; bottom: 5px; color: #fff; z-index: 1000;}
+
+        /* 设置小图部分 */
+        #container #small_pic{ width: 380px; height: 100px; overflow: hidden; background-color: #999; position: relative;}
+        #small_pic ul{ position: absolute; left: 0; width: 400px; height: 100px; padding-left: 6px;}
+        #small_pic ul li{ width: 120px; height: 100px; float: left; padding: 10px 6px; cursor: pointer; opacity: 0.5; filter: alpha(opacity:50);}
+        #small_pic ul li img{ width: 120px; height: 80px;}
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="big_pic">
+            <ul id="pic_list">
+                <li style="z-index: 1"><a href="#"><img src="img/1.jpg" alt="小狗"/></a></li>
+                <li><a href="#"><img src="img/2.jpg" alt="葡萄"/></a></li>
+                <li><a href="#"><img src="img/3.jpg" alt="油画"/></a></li>
+                <li><a href="#"><img src="img/4.jpg" alt="跑车"/></a></li>
+                <li><a href="#"><img src="img/5.jpg" alt="妹子"/></a></li>
+                <li><a href="#"><img src="img/6.jpg" alt="小花"/></a></li>
+            </ul>
+            <div id="pre"></div>
+            <div id="next"></div>
+            <div class="big_bg"></div>
+            <a href="#" class="mark_left"></a>
+            <a href="#" class="mark_right"></a>
+            <div class="pic_con">小狗</div>
+            <div class="pic_length">1/6</div>
+        </div>
+        <div id="small_pic">
+            <ul>
+                <li><img src="img/1.jpg" alt="pic"/></li>
+                <li><img src="img/2.jpg" alt="pic"/></li>
+                <li><img src="img/3.jpg" alt="pic"/></li>
+                <li><img src="img/4.jpg" alt="pic"/></li>
+                <li><img src="img/5.jpg" alt="pic"/></li>
+                <li><img src="img/6.jpg" alt="pic"/></li>
+            </ul>
+        </div>
+    </div>
+</body>
+<script src="js/move.js"></script>
+<script>
+    var container = document.getElementById('container');
+    //获取上面左右区域以及左右按钮
+    var markLeft = document.getElementsByClassName('mark_left')[0];
+    var markRight = document.getElementsByClassName('mark_right')[0];
+    var preBtn = document.getElementById('pre');
+    var nextBtn = document.getElementById('next');
+    var bigPic = document.getElementById('big_pic');
+    var oLiBig = bigPic.getElementsByTagName('li');
+    var picCon = bigPic.getElementsByClassName('pic_con')[0];
+    var picLength = bigPic.getElementsByClassName('pic_length')[0];
+    var oImg = bigPic.getElementsByTagName('img');
+
+    //获取下面图片列表中的各个节点
+    var smallPic = document.getElementById('small_pic');
+    var oLiSmall = smallPic.getElementsByTagName('li');
+    var smallUl = smallPic.getElementsByTagName('ul')[0];
+    //讲下面的图片列表显示在一行
+    smallUl.style.width = oLiSmall[0].offsetWidth * oLiSmall.length + 'px';
+
+    //全局变量，一个是当前位置，一个是当前的z-index
+    var now=0;
+    var nowZIndex = 2;
+
+    //鼠标滑入滑出相应区域的时候，箭头显示或消失
+    preBtn.onmouseover = markLeft.onmouseover = function() {
+        hcmove(preBtn,100,'opacity');
+    };
+    preBtn.onmouseout = markLeft.onmouseout = function() {
+        hcmove(preBtn,0,'opacity');
+    };
+    nextBtn.onmouseover = markRight.onmouseover = function() {
+        hcmove(nextBtn,100,'opacity');
+    };
+    nextBtn.onmouseout = markRight.onmouseout = function() {
+        hcmove(nextBtn,0,'opacity');
+    };
+
+    //鼠标滑入滑出后，下面图片列表中的透明度变化
+    for(var i=0 ; i<oLiSmall.length; i++) {
+        oLiSmall[i].index = i;
+        hcmove(oLiSmall[now],100,'opacity');
+        oLiSmall[i].onmouseover = function() {
+            if(now == this.index) {
+                return;
+            } else {
+                hcmove(this,100,'opacity');
+            }
+        };
+        oLiSmall[i].onmouseout = function() {
+            if(now == this.index) {
+                return;
+            } else {
+                hcmove(this,50,'opacity');
+            }
+        };
+
+        //轮播动画
+        function animation() {
+            for(var j=0 ; j<oLiSmall.length ; j++) {
+                hcmove(oLiSmall[j],50,'opacity');
+            }
+            hcmove(oLiSmall[now],100,'opacity');
+            oLiBig[now].style.zIndex = nowZIndex++;
+            oLiBig[now].style.height = 0 + 'px';
+            hcmove(oLiBig[now],320,'height');
+
+            if(now == 0) {
+                hcmove(smallUl,-(oLiSmall[0].offsetWidth*now),'left');
+            } else if(now == (oLiSmall.length - 1)) {
+                hcmove(smallUl,-(oLiSmall[0].offsetWidth*(now-2)),'left');
+            } else {
+                hcmove(smallUl,-(oLiSmall[0].offsetWidth*(now-1)),'left');
+            }
+
+            //添加文字说明
+            picCon.innerHTML = oImg[now].alt;
+            picLength.innerHTML = (now+1) + '/' + oLiSmall.length;
+        }
+
+        //图片列表点击切换
+        oLiSmall[i].onclick = function() {
+            if(now == this.index) {
+                return;
+            } else {
+                now = this.index;
+                animation();
+            }
+        };
+
+        //右箭头切换
+        nextBtn.onclick = function() {
+            if(now == (oLiSmall.length - 1)) {
+                now = -1;
+            }
+            now++;
+            animation();
+        };
+
+        //左箭头切换
+        preBtn.onclick = function() {
+            if(now == 0) {
+                now = oLiSmall.length;
+            }
+            now--;
+            animation();
+        };
+    }
+
+    //图片自动切换
+    var timer = setInterval(function() {
+        nextBtn.onclick();
+    },3000);
+
+    //鼠标滑入后，动画轮播停止
+    container.onmouseover = function() {
+        clearInterval(timer);
+    };
+    //鼠标滑出后，轮播动画开始
+    container.onmouseout = function() {
+        timer = setInterval(function() {
+            nextBtn.onclick();
+        },3000);
+    }
+</script>
+</html>
